@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "https://esm.sh/react@18.2.0";
-import { createRoot } from "https://esm.sh/react-dom@18.2.0/client";
-import { motion } from "https://esm.sh/framer-motion@11.0.3";
-import * as Tone from "https://esm.sh/tone@14.7.77";
+const { createContext, useContext, useEffect, useMemo, useState } = React;
+const { createRoot } = ReactDOM;
+const { motion } = window.framerMotion;
 
 const BassTheoryContext = createContext(null);
 
