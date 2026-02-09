@@ -1,0 +1,58 @@
+body {
+  background: radial-gradient(circle at top, #111827 0%, #0b0f14 70%);
+}
+
+.fretboard-grid {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(48px, 1fr));
+  gap: 8px;
+}
+
+.string-row {
+  position: relative;
+}
+
+.string-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: rgba(148, 163, 184, 0.4);
+  transform: translateY(-50%);
+}
+
+.string-row.vibrate::before {
+  animation: vibrate 0.4s ease;
+}
+
+@keyframes vibrate {
+  0% {
+    transform: translateY(-50%) scaleY(1);
+  }
+  50% {
+    transform: translateY(-52%) scaleY(1.6);
+  }
+  100% {
+    transform: translateY(-50%) scaleY(1);
+  }
+}
+
+.fret-cell {
+  position: relative;
+  z-index: 1;
+}
+
+.glow-ring {
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.5);
+}
+
+.drawer {
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.drawer.open {
+  transform: translateY(0);
+}

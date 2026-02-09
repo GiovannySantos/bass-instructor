@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Bass Dojo - Mestre do Groove v3: PWA para baixistas praticarem teoria, ritmo e localização de notas."
+    />
+    <meta name="theme-color" content="#0b0f14" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <title>Bass Dojo - Mestre do Groove v3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              studio: {
+                900: "#0b0f14",
+                800: "#111827",
+                700: "#1f2937",
+                600: "#283548",
+                neon: "#22d3ee",
+                neonSoft: "#0ea5e9",
+                amber: "#f59e0b",
+                green: "#22c55e",
+                red: "#ef4444",
+              },
+            },
+            boxShadow: {
+              glow: "0 0 20px rgba(34, 211, 238, 0.35)",
+              soft: "0 20px 40px rgba(0,0,0,0.4)",
+            },
+            fontFamily: {
+              studio: ["Inter", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="bg-studio-900 text-slate-100 font-studio">
+    <div id="root"></div>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
