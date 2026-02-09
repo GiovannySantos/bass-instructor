@@ -1,11 +1,8 @@
 const CACHE_NAME = "bass-dojo-v3";
 const ASSETS = [
   "/",
-  "/index.html",
-  "/css/style.css",
-  "/js/app.js",
   "/manifest.json",
-  "/assets/icon.svg",
+  "/icon.svg",
 ];
 
 self.addEventListener("install", (event) => {
