@@ -53,15 +53,33 @@ const BassTheoryProvider = ({ children }) => {
 
 const AppShell = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [coreOpen, setCoreOpen] = useState(false);
   const [target, setTarget] = useState(() => randomTarget());
   const [streak, setStreak] = useState(0);
   const [feedback, setFeedback] = useState(null);
-  const { rootNote } = useBassTheory();
+  const { rootNote, scaleMode } = useBassTheory();
+  const [appMode, setAppMode] = useState(() => {
+    if (typeof window === "undefined") return "treino";
+    const saved = window.localStorage.getItem("bassdojo:mode");
+    return saved === "palco" ? "palco" : "treino";
+  });
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === "undefined") return false;
     const saved = window.localStorage.getItem("bassdojo:dark");
     if (saved !== null) return saved === "true";
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+  const [bpm, setBpm] = useState(92);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [includeEighths, setIncludeEighths] = useState(false);
+  const [includeSixteenths, setIncludeSixteenths] = useState(false);
+  const [stageNotes, setStageNotes] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem("bassdojo:stage-notes") || "";
+  });
+  const [stageCue, setStageCue] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem("bassdojo:stage-cue") || "";
   });
 
   useEffect(() => {
@@ -73,6 +91,20 @@ const AppShell = () => {
     }
     window.localStorage.setItem("bassdojo:dark", String(darkMode));
   }, [darkMode]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("mode-stage", appMode === "palco");
+    window.localStorage.setItem("bassdojo:mode", appMode);
+  }, [appMode]);
+
+  useEffect(() => {
+    window.localStorage.setItem("bassdojo:stage-notes", stageNotes);
+  }, [stageNotes]);
+
+  useEffect(() => {
+    window.localStorage.setItem("bassdojo:stage-cue", stageCue);
+  }, [stageCue]);
 
   const handleGameAnswer = (noteIndex) => {
     const result = validateTarget(target, noteIndex, rootNote);
@@ -88,42 +120,54 @@ const AppShell = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f6f3] text-slate-900 transition-colors duration-300 dark:bg-[#0b0f14] dark:text-slate-100">
+    <div
+      className="min-h-screen bg-[#f7f6f3] text-slate-900 transition-colors duration-300 dark:bg-[#0b0f14] dark:text-slate-100"
+      data-mode={appMode}
+    >
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-6 md:px-8 md:py-10">
-        <header className="flex flex-col gap-6 border-b border-slate-200 pb-6 md:flex-row md:items-end md:justify-between dark:border-slate-800">
+        <header className="flex flex-col gap-6 border-b border-slate-200 pb-6 md:grid md:grid-cols-[1fr_auto] md:items-start dark:border-slate-800">
           <div className="space-y-3">
             <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs uppercase tracking-[0.28em] text-slate-500 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-400">
               Bass Dojo
             </span>
             <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl dark:text-white">
-              Mestre do Groove v3
+              Mestre do Ritmo v3
             </h1>
             <p className="max-w-xl text-sm text-slate-500 dark:text-slate-400">
               Foco em precisão: teoria aplicada, groove consistente e localização instantânea no
               braço.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-xs text-slate-500 md:flex dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-400">
-              Root atual: {rootNote}
+          <div className="flex flex-wrap items-center gap-3 md:flex-col md:items-end md:gap-4">
+            <div className="hidden rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-xs text-slate-500 md:inline-flex dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-400">
+              Tônica atual: {rootNote}
             </div>
-            <button
-              className="hidden rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 md:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-              onClick={() => setDarkMode((prev) => !prev)}
-              aria-label={darkMode ? "Modo claro" : "Modo escuro"}
-            >
-              <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
-                {darkMode ? (
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-                    <path d="M12 4.5a1 1 0 0 1 1 1V7a1 1 0 1 1-2 0V5.5a1 1 0 0 1 1-1zm0 11a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7zm8.5-3.5a1 1 0 0 1-1 1H18a1 1 0 1 1 0-2h1.5a1 1 0 0 1 1 1zM6 12a1 1 0 0 1-1 1H3.5a1 1 0 1 1 0-2H5a1 1 0 0 1 1 1zm11.78 5.28a1 1 0 0 1 0 1.42l-1.06 1.06a1 1 0 0 1-1.42-1.42l1.06-1.06a1 1 0 0 1 1.42 0zM8.7 6.2a1 1 0 0 1 0 1.42L7.64 8.68A1 1 0 1 1 6.22 7.26l1.06-1.06a1 1 0 0 1 1.42 0zm9.08-1.4a1 1 0 0 1 0 1.42l-1.06 1.06a1 1 0 0 1-1.42-1.42l1.06-1.06a1 1 0 0 1 1.42 0zM8.7 17.8a1 1 0 0 1 0 1.42l-1.06 1.06a1 1 0 1 1-1.42-1.42l1.06-1.06a1 1 0 0 1 1.42 0zM12 17a1 1 0 0 1 1 1v1.5a1 1 0 1 1-2 0V18a1 1 0 0 1 1-1z" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-                    <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 1 0 11.5 11.5z" />
-                  </svg>
-                )}
-              </span>
-            </button>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <ModeToggle appMode={appMode} setAppMode={setAppMode} />
+              <button
+                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                onClick={() => setCoreOpen(true)}
+              >
+                Núcleo Musical
+              </button>
+              <button
+                className="hidden rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 md:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                onClick={() => setDarkMode((prev) => !prev)}
+                aria-label={darkMode ? "Modo claro" : "Modo escuro"}
+              >
+                <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+                  {darkMode ? (
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
+                      <path d="M12 4.5a1 1 0 0 1 1 1V7a1 1 0 1 1-2 0V5.5a1 1 0 0 1 1-1zm0 11a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7zm8.5-3.5a1 1 0 0 1-1 1H18a1 1 0 1 1 0-2h1.5a1 1 0 0 1 1 1zM6 12a1 1 0 0 1-1 1H3.5a1 1 0 1 1 0-2H5a1 1 0 0 1 1 1zm11.78 5.28a1 1 0 0 1 0 1.42l-1.06 1.06a1 1 0 0 1-1.42-1.42l1.06-1.06a1 1 0 0 1 1.42 0zM8.7 6.2a1 1 0 0 1 0 1.42L7.64 8.68A1 1 0 1 1 6.22 7.26l1.06-1.06a1 1 0 0 1 1.42 0zm9.08-1.4a1 1 0 0 1 0 1.42l-1.06 1.06a1 1 0 0 1-1.42-1.42l1.06-1.06a1 1 0 0 1 1.42 0zM8.7 17.8a1 1 0 0 1 0 1.42l-1.06 1.06a1 1 0 1 1-1.42-1.42l1.06-1.06a1 1 0 0 1 1.42 0zM12 17a1 1 0 0 1 1 1v1.5a1 1 0 1 1-2 0V18a1 1 0 0 1 1-1z" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
+                      <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 1 0 11.5 11.5z" />
+                    </svg>
+                  )}
+                </span>
+              </button>
+            </div>
             <button
               className="rounded-full border border-slate-300 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white md:hidden dark:border-slate-700 dark:bg-slate-100 dark:text-slate-900"
               onClick={() => setDrawerOpen(true)}
@@ -134,20 +178,41 @@ const AppShell = () => {
         </header>
 
         <main className="flex-1 pt-6">
-          <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="space-y-6">
-              <SmartFretboard onNoteSelect={handleGameAnswer} />
-              <FlashcardTrainer target={target} streak={streak} feedback={feedback} />
-            </div>
-
-            <aside className="space-y-6">
-              <div className="hidden space-y-6 md:block">
-                <ControlPanel />
-                <MetronomePanel />
-                <GrooveBriefing />
+          {appMode === "palco" ? (
+            <StageMode
+              bpm={bpm}
+              setBpm={setBpm}
+              rootNote={rootNote}
+              scaleMode={scaleMode}
+              stageNotes={stageNotes}
+              setStageNotes={setStageNotes}
+              stageCue={stageCue}
+              setStageCue={setStageCue}
+            />
+          ) : (
+            <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+              <div className="space-y-6">
+                <SmartFretboard onNoteSelect={handleGameAnswer} />
+                <FlashcardTrainer target={target} streak={streak} feedback={feedback} />
               </div>
-            </aside>
-          </section>
+
+              <aside className="space-y-6">
+                <div className="hidden space-y-6 md:block">
+                  <MetronomePanel
+                    bpm={bpm}
+                    setBpm={setBpm}
+                    isPlaying={isPlaying}
+                    setIsPlaying={setIsPlaying}
+                    includeEighths={includeEighths}
+                    setIncludeEighths={setIncludeEighths}
+                    includeSixteenths={includeSixteenths}
+                    setIncludeSixteenths={setIncludeSixteenths}
+                  />
+                  <GrooveBriefing />
+                </div>
+              </aside>
+            </section>
+          )}
         </main>
 
         <footer className="mt-10 border-t border-slate-200 pt-6 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
@@ -158,7 +223,7 @@ const AppShell = () => {
                 Atalhos: clique nas casas
               </span>
               <span className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 dark:border-slate-700 dark:bg-slate-900/70">
-                Dica: ajuste root e modo
+                Dica: ajuste tônica e modo
               </span>
             </div>
           </div>
@@ -179,6 +244,16 @@ const AppShell = () => {
             </button>
           </div>
           <div className="space-y-4">
+            <ModeToggle appMode={appMode} setAppMode={setAppMode} compact />
+            <button
+              className="w-full rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              onClick={() => {
+                setDrawerOpen(false);
+                setCoreOpen(true);
+              }}
+            >
+              Núcleo Musical
+            </button>
             <button
               className="w-full rounded-full border border-slate-300 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white dark:border-slate-700 dark:bg-slate-100 dark:text-slate-900"
               onClick={() => setDarkMode((prev) => !prev)}
@@ -197,11 +272,40 @@ const AppShell = () => {
               </span>
             </button>
             <ControlPanel compact />
-            <MetronomePanel compact />
+            <MetronomePanel
+              compact
+              bpm={bpm}
+              setBpm={setBpm}
+              isPlaying={isPlaying}
+              setIsPlaying={setIsPlaying}
+              includeEighths={includeEighths}
+              setIncludeEighths={setIncludeEighths}
+              includeSixteenths={includeSixteenths}
+              setIncludeSixteenths={setIncludeSixteenths}
+            />
             <GrooveBriefing compact />
           </div>
         </div>
       </div>
+
+      {coreOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_30px_80px_rgba(15,23,42,0.35)] dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+                Núcleo Musical
+              </h2>
+              <button
+                className="text-xs text-slate-500 dark:text-slate-400"
+                onClick={() => setCoreOpen(false)}
+              >
+                Fechar
+              </button>
+            </div>
+            <ControlPanel compact />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -219,7 +323,7 @@ const ControlPanel = ({ compact = false }) => {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Core Musical</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Núcleo Musical</h2>
         {!compact && (
           <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
             Configuração
@@ -229,7 +333,7 @@ const ControlPanel = ({ compact = false }) => {
       <div className="grid gap-4">
         <div className="grid gap-2">
           <label className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
-            Root
+            Tônica
           </label>
           <select
             className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
@@ -261,7 +365,7 @@ const ControlPanel = ({ compact = false }) => {
         </div>
         <div className="grid gap-2">
           <label className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
-            Display
+            Exibição
           </label>
           <div className="flex gap-2">
             {["notas", "intervalos"].map((mode) => (
@@ -286,6 +390,30 @@ const ControlPanel = ({ compact = false }) => {
         )}
       </div>
     </section>
+  );
+};
+
+const ModeToggle = ({ appMode, setAppMode, compact = false }) => {
+  return (
+    <div
+      className={`inline-flex rounded-full border border-slate-200 bg-white/80 p-1 text-xs dark:border-slate-700 dark:bg-slate-900/70 ${
+        compact ? "w-full" : ""
+      }`}
+    >
+      {["treino", "palco"].map((mode) => (
+        <button
+          key={mode}
+          className={`rounded-full px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.2em] transition md:text-xs ${
+            appMode === mode
+              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          } ${compact ? "flex-1" : ""}`}
+          onClick={() => setAppMode(mode)}
+        >
+          {mode}
+        </button>
+      ))}
+    </div>
   );
 };
 
@@ -336,7 +464,7 @@ const SmartFretboard = ({ onNoteSelect }) => {
     <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Smart Fretboard</h2>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Braço Inteligente</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Notas seguras destacadas. Clique para treinar a posição.
           </p>
@@ -396,11 +524,17 @@ const SmartFretboard = ({ onNoteSelect }) => {
   );
 };
 
-const MetronomePanel = ({ compact = false }) => {
-  const [bpm, setBpm] = useState(90);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [includeEighths, setIncludeEighths] = useState(false);
-  const [includeSixteenths, setIncludeSixteenths] = useState(false);
+const MetronomePanel = ({
+  compact = false,
+  bpm,
+  setBpm,
+  isPlaying,
+  setIsPlaying,
+  includeEighths,
+  setIncludeEighths,
+  includeSixteenths,
+  setIncludeSixteenths,
+}) => {
   const [tapTimes, setTapTimes] = useState([]);
 
   const toggleTransport = () => {
@@ -422,7 +556,7 @@ const MetronomePanel = ({ compact = false }) => {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Groove Trainer</h2>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Treino de Ritmo</h2>
         <span className="text-xs text-slate-400 dark:text-slate-500">{bpm} BPM</span>
       </div>
       <div className="grid gap-4">
@@ -431,7 +565,7 @@ const MetronomePanel = ({ compact = false }) => {
             className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs uppercase tracking-[0.18em] text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
             onClick={handleTap}
           >
-            Tap Tempo
+            Bater tempo
           </button>
           <button
             className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${
@@ -441,7 +575,7 @@ const MetronomePanel = ({ compact = false }) => {
             }`}
             onClick={toggleTransport}
           >
-            {isPlaying ? "Stop" : "Play"}
+            {isPlaying ? "Parar" : "Iniciar"}
           </button>
         </div>
         <input
@@ -480,13 +614,144 @@ const MetronomePanel = ({ compact = false }) => {
   );
 };
 
+const StageMode = ({
+  bpm,
+  setBpm,
+  rootNote,
+  scaleMode,
+  stageNotes,
+  setStageNotes,
+  stageCue,
+  setStageCue,
+}) => {
+  return (
+    <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="space-y-6">
+        <div className="stage-card rounded-3xl border border-slate-200 bg-white/85 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.12)] dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
+                Modo Palco
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Layout enxuto com informação grande e foco total.
+              </p>
+            </div>
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs uppercase tracking-[0.28em] text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
+              palco
+            </span>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
+              <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400">Tom</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+                {rootNote}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
+              <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400">
+                Escala
+              </p>
+              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                {SCALE_LABELS[scaleMode]}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950/40">
+              <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400">
+                BPM
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+                {bpm}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <StageTempo bpm={bpm} setBpm={setBpm} />
+      </div>
+
+      <aside className="space-y-6">
+        <div className="stage-card rounded-3xl border border-slate-200 bg-white/85 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.12)] dark:border-slate-800 dark:bg-slate-900/80">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Repertório Rápido</h3>
+          <textarea
+            className="mt-4 min-h-[160px] w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 shadow-sm focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-200"
+            placeholder="Ex: 1) Intro em Mi • 2) Ritmo 95 BPM • 3) Solo..."
+            value={stageNotes}
+            onChange={(event) => setStageNotes(event.target.value)}
+          />
+          <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
+            Salvo automaticamente no dispositivo.
+          </p>
+        </div>
+
+        <div className="stage-card rounded-3xl border border-slate-200 bg-white/85 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.12)] dark:border-slate-800 dark:bg-slate-900/80">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Próximo Cue</h3>
+          <input
+            className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-base font-semibold text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950/50 dark:text-white"
+            placeholder="Ex: Ponte • Vira no 2"
+            value={stageCue}
+            onChange={(event) => setStageCue(event.target.value)}
+          />
+          <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
+            Visão imediata para transições.
+          </p>
+        </div>
+      </aside>
+    </section>
+  );
+};
+
+const StageTempo = ({ bpm, setBpm }) => {
+  const [tapTimes, setTapTimes] = useState([]);
+
+  const handleTap = () => {
+    const now = Date.now();
+    const updated = [...tapTimes, now].slice(-4);
+    setTapTimes(updated);
+    if (updated.length >= 2) {
+      const intervals = updated.slice(1).map((time, idx) => time - updated[idx]);
+      const avg = intervals.reduce((acc, val) => acc + val, 0) / intervals.length;
+      const nextBpm = Math.round(60000 / avg);
+      setBpm(Math.min(220, Math.max(40, nextBpm)));
+    }
+  };
+
+  return (
+    <div className="stage-card rounded-3xl border border-slate-200 bg-white/85 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.12)] dark:border-slate-800 dark:bg-slate-900/80">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Tempo de Palco</h3>
+        <span className="text-sm text-slate-400 dark:text-slate-500">{bpm} BPM</span>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
+          onClick={handleTap}
+        >
+          Bater
+        </button>
+        <input
+          className="accent-slate-900"
+          type="range"
+          min={40}
+          max={220}
+          value={bpm}
+          onChange={(event) => setBpm(Number(event.target.value))}
+        />
+      </div>
+      <p className="mt-4 text-xs text-slate-400 dark:text-slate-500">
+        Ajuste rápido sem distrair do palco.
+      </p>
+    </div>
+  );
+};
+
 const FlashcardTrainer = ({ target, streak, feedback }) => {
   const { rootNote } = useBassTheory();
   return (
     <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Flashcards</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Cartões de Treino</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {target.type === "note"
               ? `Encontre todas as notas ${target.value}`
@@ -494,12 +759,12 @@ const FlashcardTrainer = ({ target, streak, feedback }) => {
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
-          <span className="uppercase tracking-[0.2em]">Streak</span>
+          <span className="uppercase tracking-[0.2em]">Sequência</span>
           <span className="text-slate-900 dark:text-slate-100">{streak}</span>
         </div>
       </div>
       <p className="mt-4 text-xs text-slate-400 dark:text-slate-500">
-        Responda clicando na casa correta do Smart Fretboard.
+        Responda clicando na casa correta do Braço Inteligente.
       </p>
       {feedback && (
         <div
@@ -521,7 +786,7 @@ const GrooveBriefing = ({ compact = false }) => {
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Briefing de Gig</h2>
+      <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Guia de Palco</h2>
       <div className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
         <p>
           <span className="text-slate-400 dark:text-slate-500">Estilo:</span> {briefing.style}
@@ -539,11 +804,11 @@ const GrooveBriefing = ({ compact = false }) => {
         className="mt-5 w-full rounded-full border border-slate-300 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white dark:border-slate-200 dark:bg-white dark:text-slate-900"
         onClick={() => setBriefing(createBriefing())}
       >
-        Sortear novo briefing
+        Sortear novo guia
       </button>
       {!compact && (
         <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
-          Use o briefing para variar grooves e treinar criatividade.
+          Use o guia para variar ritmos e treinar criatividade.
         </p>
       )}
     </section>
@@ -563,7 +828,7 @@ const createBriefing = () => {
     "Apenas tríades",
     "Foco no Slap",
     "Walking Bass",
-    "Groove com notas longas",
+    "Ritmo com notas longas",
   ];
 
   return {
