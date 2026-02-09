@@ -10,7 +10,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "smoke:build": "npm run build",
+    "smoke:preview": "npm run preview",
+    "audit:baseline": "node -e \"const fs=require('fs'); const path=require('path'); const root=process.cwd(); const show=(p,depth)=>{const indent='  '.repeat(depth); const entries=fs.readdirSync(p,{withFileTypes:true}).filter(e=>!e.name.startsWith('.')); for (const e of entries){const rel=path.relative(root, path.join(p,e.name))||'.'; console.log(indent+(e.isDirectory()?'[d] ':'- ')+rel); if (e.isDirectory() && depth<1 && ['src','public','_audit'].includes(rel)) show(path.join(p,e.name), depth+1);}}; console.log('Baseline tree (limited):'); show(root,0); console.log('\\nEntry points: index.html, src/main.jsx, src/App.jsx');\""
   },
   "dependencies": {
     "react": "^19.2.0",

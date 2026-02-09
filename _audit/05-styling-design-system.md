@@ -1,0 +1,307 @@
+# 05-styling-design-system
+
+## Como o styling e feito
+- Tailwind CSS via PostCSS (plugin @tailwindcss/postcss). (postcss.config.js, tailwind.config.js)
+- CSS custom adicional em src/index.css (gradientes, layout do braco, animacoes, drawer, etc). (src/index.css)
+
+## Tokens (cores, tipografia, espaco)
+- Cores custom em tailwind.config.js: palette studio (900..600, neon, amber, green, red). (tailwind.config.js)
+- Sombras custom: glow, soft. (tailwind.config.js)
+- Font family definida no Tailwind: studio -> Inter + system-ui. (tailwind.config.js)
+- Fonte real no CSS global: Space Grotesk via Google Fonts. (src/index.css)
+
+## Tema / dark mode
+- Tailwind darkMode = class, entao depende de classe .dark no html. (tailwind.config.js)
+- AppShell alterna classe dark no documentElement e salva em localStorage. (src/App.jsx)
+- Existe classe .mode-stage para modo palco com ajustes de background. (src/index.css, src/App.jsx)
+
+## Evidencias (outputs relevantes)
+tailwind.config.js:
+```js
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        studio: {
+          900: "#0b0f14",
+          800: "#111827",
+          700: "#1f2937",
+          600: "#283548",
+          neon: "#22d3ee",
+          neonSoft: "#0ea5e9",
+          amber: "#f59e0b",
+          green: "#22c55e",
+          red: "#ef4444",
+        },
+      },
+      boxShadow: {
+        glow: "0 0 20px rgba(34, 211, 238, 0.35)",
+        soft: "0 20px 40px rgba(0,0,0,0.4)",
+      },
+      fontFamily: {
+        studio: ["Inter", "system-ui", "sans-serif"],
+      },
+    },
+  },
+  plugins: [],
+};
+```
+
+postcss.config.js:
+```js
+export default {
+  plugins: {
+    "@tailwindcss/postcss": {},
+    autoprefixer: {},
+  },
+};
+```
+
+src/index.css:
+```css
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  background: radial-gradient(circle at top, #ffffff 0%, #f3f2ef 55%, #ecebe7 100%);
+}
+
+.dark body {
+  background: radial-gradient(circle at top, #0f172a 0%, #0b0f14 70%);
+}
+
+.mode-stage body {
+  background: radial-gradient(circle at top, #0b0f14 0%, #06090f 70%);
+}
+
+.mode-stage .stage-card {
+  border-color: rgba(148, 163, 184, 0.35);
+  box-shadow: 0 22px 60px rgba(5, 10, 20, 0.35);
+}
+
+.fretboard-grid {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(48px, 1fr));
+  gap: 8px;
+  position: relative;
+  padding: 6px 4px 10px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0.02));
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12);
+}
+
+.string-row {
+  position: relative;
+}
+
+.string-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: rgba(148, 163, 184, 0.5);
+  transform: translateY(-50%);
+}
+
+.dark .fretboard-grid {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.1));
+}
+
+.fret-marker-row {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(48px, 1fr));
+  gap: 8px;
+  padding: 0 4px;
+  color: rgba(100, 116, 139, 0.8);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.fret-marker {
+  text-align: center;
+  font-weight: 600;
+}
+
+.fret-marker::after {
+  content: "";
+  display: block;
+  margin: 6px auto 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.fret-marker[data-dot="true"]::after {
+  background: rgba(100, 116, 139, 0.5);
+}
+
+.string-row.vibrate::before {
+  animation: vibrate 0.4s ease;
+}
+
+@keyframes vibrate {
+  0% {
+    transform: translateY(-50%) scaleY(1);
+  }
+  50% {
+    transform: translateY(-52%) scaleY(1.6);
+  }
+  100% {
+    transform: translateY(-50%) scaleY(1);
+  }
+}
+
+.fret-cell {
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(6px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.glow-ring {
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.12), 0 12px 30px rgba(15, 23, 42, 0.18);
+}
+
+.fret-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+}
+
+.fret-root {
+  background: linear-gradient(135deg, #111827, #0f172a);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.35);
+}
+
+.dark .fret-root {
+  background: linear-gradient(135deg, #ffffff, #e2e8f0);
+  color: #0f172a;
+}
+
+.fret-chord {
+  background: linear-gradient(135deg, #ecfeff, #d1fae5);
+  color: #0f766e;
+  box-shadow: 0 10px 22px rgba(16, 185, 129, 0.15);
+}
+
+.dark .fret-chord {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.25));
+  color: #a7f3d0;
+}
+
+.fret-scale {
+  background: linear-gradient(135deg, #ffffff, #e0f2fe);
+  color: #1e293b;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.12);
+}
+
+.dark .fret-scale {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(15, 23, 42, 0.7));
+  color: #e2e8f0;
+}
+
+.fret-muted {
+  background: rgba(148, 163, 184, 0.12);
+  color: rgba(100, 116, 139, 0.7);
+}
+
+.dark .fret-muted {
+  background: rgba(30, 41, 59, 0.6);
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.legend-pill {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.dark .legend-pill {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.legend-root {
+  color: #0f172a;
+}
+
+.legend-chord {
+  color: #047857;
+}
+
+.legend-scale {
+  color: #475569;
+}
+
+.dark .legend-root {
+  color: #e2e8f0;
+}
+
+.dark .legend-chord {
+  color: #a7f3d0;
+}
+
+.dark .legend-scale {
+  color: #cbd5f5;
+}
+
+.dropdown-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 320px;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 20;
+  background: transparent;
+}
+
+.dropdown-panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.dropdown-surface {
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  overflow: hidden;
+}
+
+.dark .dropdown-surface {
+  background: #0b0f14;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.dropdown-surface > section {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.drawer {
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.drawer.open {
+  transform: translateY(0);
+}
+```
