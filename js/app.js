@@ -1,6 +1,6 @@
 const { createContext, useContext, useEffect, useMemo, useState } = React;
 const { createRoot } = ReactDOM;
-const { motion } = window.framerMotion;
+const html = window.htm.bind(React.createElement);
 
 const BassTheoryContext = createContext(null);
 
@@ -74,7 +74,7 @@ const BassTheoryProvider = ({ children }) => {
     [masterVolume, metronomeVolume, rootNote, scaleMode, displayMode]
   );
 
-  return <BassTheoryContext.Provider value={value}>{children}</BassTheoryContext.Provider>;
+  return html`<${BassTheoryContext.Provider} value=${value}>${children}</${BassTheoryContext.Provider}>`;
 };
 
 const useAudioEngine = () => {
@@ -122,7 +122,7 @@ const AppShell = () => {
     setTimeout(() => setFeedback(null), 900);
   };
 
-  return (
+  return html`
     <div className="min-h-screen px-4 py-6 md:px-10">
       <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -136,7 +136,7 @@ const AppShell = () => {
         </div>
         <button
           className="rounded-xl border border-studio-neon/40 bg-studio-700/60 px-4 py-2 text-sm font-semibold text-studio-neon shadow-glow md:hidden"
-          onClick={() => setDrawerOpen(true)}
+          onClick=${() => setDrawerOpen(true)}
         >
           Configurações
         </button>
@@ -144,36 +144,36 @@ const AppShell = () => {
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-6">
-          <SmartFretboard onNoteSelect={handleGameAnswer} />
-          <FlashcardTrainer target={target} streak={streak} feedback={feedback} />
+          <${SmartFretboard} onNoteSelect=${handleGameAnswer} />
+          <${FlashcardTrainer} target=${target} streak=${streak} feedback=${feedback} />
         </div>
 
         <div className="space-y-6">
           <div className="hidden space-y-6 md:block">
-            <ControlPanel />
-            <MetronomePanel />
-            <GrooveBriefing />
+            <${ControlPanel} />
+            <${MetronomePanel} />
+            <${GrooveBriefing} />
           </div>
         </div>
       </div>
 
-      <div className={`drawer fixed inset-x-0 bottom-0 z-40 md:hidden ${drawerOpen ? "open" : ""}`}>
+      <div className=${`drawer fixed inset-x-0 bottom-0 z-40 md:hidden ${drawerOpen ? "open" : ""}`}>
         <div className="rounded-t-3xl border border-studio-600 bg-studio-800/95 p-6 shadow-soft backdrop-blur">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-studio-neon">Configurações rápidas</h2>
-            <button className="text-sm text-slate-400" onClick={() => setDrawerOpen(false)}>
+            <button className="text-sm text-slate-400" onClick=${() => setDrawerOpen(false)}>
               Fechar
             </button>
           </div>
           <div className="space-y-4">
-            <ControlPanel compact />
-            <MetronomePanel compact />
-            <GrooveBriefing compact />
+            <${ControlPanel} compact />
+            <${MetronomePanel} compact />
+            <${GrooveBriefing} compact />
           </div>
         </div>
       </div>
     </div>
-  );
+  `;
 };
 
 const ControlPanel = ({ compact = false }) => {
@@ -190,85 +190,78 @@ const ControlPanel = ({ compact = false }) => {
     setDisplayMode,
   } = useBassTheory();
 
-  return (
-    <motion.section
-      className="rounded-2xl border border-studio-600 bg-studio-800/80 p-5 shadow-soft"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
+  return html`
+    <section className="rounded-2xl border border-studio-600 bg-studio-800/80 p-5 shadow-soft">
       <h2 className="mb-4 text-lg font-semibold text-studio-neon">Core Musical</h2>
       <div className="grid gap-4">
         <div className="grid gap-2">
           <label className="text-xs uppercase tracking-[0.3em] text-slate-400">Root</label>
           <select
             className="rounded-xl border border-studio-600 bg-studio-700/60 px-3 py-2 text-sm"
-            value={rootNote}
-            onChange={(event) => setRootNote(event.target.value)}
+            value=${rootNote}
+            onChange=${(event) => setRootNote(event.target.value)}
           >
-            {NOTES.map((note) => (
-              <option key={note} value={note}>
-                {note}
-              </option>
-            ))}
+            ${NOTES.map(
+              (note) => html`<option key=${note} value=${note}>${note}</option>`
+            )}
           </select>
         </div>
         <div className="grid gap-2">
           <label className="text-xs uppercase tracking-[0.3em] text-slate-400">Modo</label>
           <select
             className="rounded-xl border border-studio-600 bg-studio-700/60 px-3 py-2 text-sm"
-            value={scaleMode}
-            onChange={(event) => setScaleMode(event.target.value)}
+            value=${scaleMode}
+            onChange=${(event) => setScaleMode(event.target.value)}
           >
-            {Object.entries(SCALE_LABELS).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
+            ${Object.entries(SCALE_LABELS).map(
+              ([key, label]) => html`<option key=${key} value=${key}>${label}</option>`
+            )}
           </select>
         </div>
         <div className="grid gap-2">
           <label className="text-xs uppercase tracking-[0.3em] text-slate-400">Display</label>
           <div className="flex gap-2">
-            {["notas", "intervalos"].map((mode) => (
-              <button
-                key={mode}
-                className={`flex-1 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
-                  displayMode === mode
-                    ? "border-studio-neon bg-studio-neon/20 text-studio-neon"
-                    : "border-studio-600 bg-studio-700/60 text-slate-300"
-                }`}
-                onClick={() => setDisplayMode(mode)}
-              >
-                {mode === "notas" ? "Notas" : "Intervalos"}
-              </button>
-            ))}
+            ${["notas", "intervalos"].map(
+              (mode) => html`
+                <button
+                  key=${mode}
+                  className=${`flex-1 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+                    displayMode === mode
+                      ? "border-studio-neon bg-studio-neon/20 text-studio-neon"
+                      : "border-studio-600 bg-studio-700/60 text-slate-300"
+                  }`}
+                  onClick=${() => setDisplayMode(mode)}
+                >
+                  ${mode === "notas" ? "Notas" : "Intervalos"}
+                </button>
+              `
+            )}
           </div>
         </div>
         <div className="grid gap-2">
           <label className="text-xs uppercase tracking-[0.3em] text-slate-400">Master Volume</label>
           <input
             type="range"
-            min={-24}
-            max={0}
-            value={masterVolume}
-            onChange={(event) => setMasterVolume(Number(event.target.value))}
+            min=${-24}
+            max=${0}
+            value=${masterVolume}
+            onChange=${(event) => setMasterVolume(Number(event.target.value))}
           />
         </div>
         <div className="grid gap-2">
           <label className="text-xs uppercase tracking-[0.3em] text-slate-400">Metronome Volume</label>
           <input
             type="range"
-            min={-24}
-            max={0}
-            value={metronomeVolume}
-            onChange={(event) => setMetronomeVolume(Number(event.target.value))}
+            min=${-24}
+            max=${0}
+            value=${metronomeVolume}
+            onChange=${(event) => setMetronomeVolume(Number(event.target.value))}
           />
         </div>
-        {!compact && <DroneToggle />}
+        ${!compact ? html`<${DroneToggle} />` : ""}
       </div>
-    </motion.section>
-  );
+    </section>
+  `;
 };
 
 const DroneToggle = () => {
@@ -287,18 +280,18 @@ const DroneToggle = () => {
     setActive(!active);
   };
 
-  return (
+  return html`
     <button
-      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+      className=${`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
         active
           ? "border-studio-neon bg-studio-neon/20 text-studio-neon glow-ring"
           : "border-studio-600 bg-studio-700/60 text-slate-300"
       }`}
-      onClick={toggleDrone}
+      onClick=${toggleDrone}
     >
-      {active ? "Drone Ativo" : "Toggle Drone"}
+      ${active ? "Drone Ativo" : "Toggle Drone"}
     </button>
-  );
+  `;
 };
 
 const buildScaleNotes = (rootNote, scaleMode) => {
@@ -348,13 +341,8 @@ const SmartFretboard = ({ onNoteSelect }) => {
     if (onNoteSelect) onNoteSelect(noteIndex);
   };
 
-  return (
-    <motion.section
-      className="rounded-3xl border border-studio-600 bg-studio-800/80 p-6 shadow-soft"
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+  return html`
+    <section className="rounded-3xl border border-studio-600 bg-studio-800/80 p-6 shadow-soft">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-studio-neon">Smart Fretboard</h2>
@@ -363,55 +351,58 @@ const SmartFretboard = ({ onNoteSelect }) => {
           </p>
         </div>
         <div className="rounded-xl bg-studio-700/70 px-3 py-2 text-xs text-slate-300">
-          {rootNote} • {SCALE_LABELS[scaleMode]}
+          ${rootNote} • ${SCALE_LABELS[scaleMode]}
         </div>
       </div>
       <div className="space-y-4">
-        {STRING_TUNING.map((stringName, stringIdx) => (
-          <div
-            key={stringName}
-            className={`string-row ${activeString === stringIdx ? "vibrate" : ""}`}
-          >
-            <div className="fretboard-grid">
-              {Array.from({ length: FRET_COUNT + 1 }, (_, fret) => {
-                const noteIndex = (STRING_INDEX[stringIdx] + fret) % 12;
-                const isScale = scaleNotes.includes(noteIndex);
-                const isChord = chordNotes.includes(noteIndex);
-                const isRoot = noteIndex === NOTES.indexOf(rootNote);
-                const label = displayMode === "notas"
-                  ? NOTES[noteIndex]
-                  : isRoot
-                  ? "R"
-                  : isChord
-                  ? ["3", "5", "7"][chordNotes.indexOf(noteIndex) - 1] || ""
-                  : "";
+        ${STRING_TUNING.map(
+          (stringName, stringIdx) => html`
+            <div
+              key=${stringName}
+              className=${`string-row ${activeString === stringIdx ? "vibrate" : ""}`}
+            >
+              <div className="fretboard-grid">
+                ${Array.from({ length: FRET_COUNT + 1 }, (_, fret) => {
+                  const noteIndex = (STRING_INDEX[stringIdx] + fret) % 12;
+                  const isScale = scaleNotes.includes(noteIndex);
+                  const isChord = chordNotes.includes(noteIndex);
+                  const isRoot = noteIndex === NOTES.indexOf(rootNote);
+                  const label =
+                    displayMode === "notas"
+                      ? NOTES[noteIndex]
+                      : isRoot
+                      ? "R"
+                      : isChord
+                      ? ["3", "5", "7"][chordNotes.indexOf(noteIndex) - 1] || ""
+                      : "";
 
-                const baseClasses = isScale
-                  ? "border-studio-neon/20"
-                  : "border-transparent opacity-20";
-                const highlight = isChord
-                  ? "bg-studio-neon/20 text-studio-neon border-studio-neon"
-                  : isScale
-                  ? "bg-studio-700/60 text-slate-200"
-                  : "bg-studio-900/80 text-slate-500";
-                const played = playedNote === noteIndex ? "glow-ring" : "";
+                  const baseClasses = isScale
+                    ? "border-studio-neon/20"
+                    : "border-transparent opacity-20";
+                  const highlight = isChord
+                    ? "bg-studio-neon/20 text-studio-neon border-studio-neon"
+                    : isScale
+                    ? "bg-studio-700/60 text-slate-200"
+                    : "bg-studio-900/80 text-slate-500";
+                  const played = playedNote === noteIndex ? "glow-ring" : "";
 
-                return (
-                  <button
-                    key={`${stringName}-${fret}`}
-                    className={`fret-cell rounded-lg border px-2 py-3 text-xs font-semibold transition ${baseClasses} ${highlight} ${played}`}
-                    onClick={() => handlePlay(noteIndex, stringIdx)}
-                  >
-                    {fret === 0 ? stringName : label || "•"}
-                  </button>
-                );
-              })}
+                  return html`
+                    <button
+                      key=${`${stringName}-${fret}`}
+                      className=${`fret-cell rounded-lg border px-2 py-3 text-xs font-semibold transition ${baseClasses} ${highlight} ${played}`}
+                      onClick=${() => handlePlay(noteIndex, stringIdx)}
+                    >
+                      ${fret === 0 ? stringName : label || "•"}
+                    </button>
+                  `;
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          `
+        )}
       </div>
-    </motion.section>
-  );
+    </section>
+  `;
 };
 
 const MetronomePanel = ({ compact = false }) => {
@@ -472,85 +463,77 @@ const MetronomePanel = ({ compact = false }) => {
     }
   };
 
-  return (
-    <motion.section
-      className="rounded-2xl border border-studio-600 bg-studio-800/80 p-5 shadow-soft"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 }}
-    >
+  return html`
+    <section className="rounded-2xl border border-studio-600 bg-studio-800/80 p-5 shadow-soft">
       <h2 className="mb-4 text-lg font-semibold text-studio-neon">Groove Trainer</h2>
       <div className="grid gap-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-300">{bpm} BPM</span>
+          <span className="text-sm text-slate-300">${bpm} BPM</span>
           <div className="flex gap-2">
             <button
               className="rounded-xl border border-studio-neon/40 bg-studio-700/60 px-3 py-2 text-xs text-studio-neon"
-              onClick={handleTap}
+              onClick=${handleTap}
             >
               Tap Tempo
             </button>
             <button
-              className={`rounded-xl border px-3 py-2 text-xs font-semibold ${
+              className=${`rounded-xl border px-3 py-2 text-xs font-semibold ${
                 isPlaying
                   ? "border-studio-neon bg-studio-neon/20 text-studio-neon"
                   : "border-studio-600 bg-studio-700/60 text-slate-300"
               }`}
-              onClick={toggleTransport}
+              onClick=${toggleTransport}
             >
-              {isPlaying ? "Stop" : "Play"}
+              ${isPlaying ? "Stop" : "Play"}
             </button>
           </div>
         </div>
         <input
           type="range"
-          min={40}
-          max={200}
-          value={bpm}
-          onChange={(event) => setBpm(Number(event.target.value))}
+          min=${40}
+          max=${200}
+          value=${bpm}
+          onChange=${(event) => setBpm(Number(event.target.value))}
         />
         <div className="flex flex-wrap gap-2 text-xs text-slate-300">
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
-              checked={includeEighths}
-              onChange={(event) => setIncludeEighths(event.target.checked)}
+              checked=${includeEighths}
+              onChange=${(event) => setIncludeEighths(event.target.checked)}
             />
             Colcheias (1/8)
           </label>
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
-              checked={includeSixteenths}
-              onChange={(event) => setIncludeSixteenths(event.target.checked)}
+              checked=${includeSixteenths}
+              onChange=${(event) => setIncludeSixteenths(event.target.checked)}
             />
             Semicolcheias (1/16)
           </label>
         </div>
-        {!compact && (
-          <p className="text-xs text-slate-400">
-            Tempo 1 com som de kick, subdivisões com click metálico.
-          </p>
-        )}
+        ${!compact
+          ? html`
+              <p className="text-xs text-slate-400">
+                Tempo 1 com som de kick, subdivisões com click metálico.
+              </p>
+            `
+          : ""}
       </div>
-    </motion.section>
-  );
+    </section>
+  `;
 };
 
 const FlashcardTrainer = ({ target, streak, feedback }) => {
   const { rootNote } = useBassTheory();
-  return (
-    <motion.section
-      className="rounded-2xl border border-studio-600 bg-studio-800/80 p-5 shadow-soft"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
+  return html`
+    <section className="rounded-2xl border border-studio-600 bg-studio-800/80 p-5 shadow-soft">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-studio-neon">Flashcards de Localização</h2>
           <p className="text-xs text-slate-400">
-            {target.type === "note"
+            ${target.type === "note"
               ? `Encontre todas as notas ${target.value}`
               : `Toque a ${target.value} de ${rootNote}`}
           </p>
@@ -558,55 +541,56 @@ const FlashcardTrainer = ({ target, streak, feedback }) => {
         <div className="flex items-center gap-2">
           <span className="text-xs uppercase tracking-[0.3em] text-slate-400">Streak</span>
           <span className="rounded-full bg-studio-700/70 px-3 py-1 text-sm text-studio-neon">
-            {streak}
+            ${streak}
           </span>
         </div>
       </div>
       <p className="mt-4 text-xs text-slate-400">
         Responda clicando na casa correta do Smart Fretboard acima.
       </p>
-      {feedback && (
-        <div
-          className={`mt-3 rounded-xl px-3 py-2 text-sm font-semibold ${
-            feedback.ok ? "bg-studio-green/20 text-studio-green" : "bg-studio-red/20 text-studio-red"
-          }`}
-        >
-          {feedback.message}
-        </div>
-      )}
-    </motion.section>
-  );
+      ${feedback
+        ? html`
+            <div
+              className=${`mt-3 rounded-xl px-3 py-2 text-sm font-semibold ${
+                feedback.ok
+                  ? "bg-studio-green/20 text-studio-green"
+                  : "bg-studio-red/20 text-studio-red"
+              }`}
+            >
+              ${feedback.message}
+            </div>
+          `
+        : ""}
+    </section>
+  `;
 };
 
 const GrooveBriefing = ({ compact = false }) => {
   const [briefing, setBriefing] = useState(() => createBriefing());
 
-  return (
-    <motion.section
-      className="rounded-2xl border border-studio-600 bg-studio-800/80 p-5 shadow-soft"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
+  return html`
+    <section className="rounded-2xl border border-studio-600 bg-studio-800/80 p-5 shadow-soft">
       <h2 className="mb-4 text-lg font-semibold text-studio-neon">Briefing de Gig</h2>
       <div className="space-y-2 text-sm text-slate-300">
-        <p><span className="text-slate-400">Estilo:</span> {briefing.style}</p>
-        <p><span className="text-slate-400">Progressão:</span> {briefing.progression}</p>
-        <p><span className="text-slate-400">Técnica:</span> {briefing.technique}</p>
+        <p><span className="text-slate-400">Estilo:</span> ${briefing.style}</p>
+        <p><span className="text-slate-400">Progressão:</span> ${briefing.progression}</p>
+        <p><span className="text-slate-400">Técnica:</span> ${briefing.technique}</p>
       </div>
       <button
         className="mt-4 w-full rounded-xl border border-studio-neon/40 bg-studio-700/60 px-4 py-2 text-sm font-semibold text-studio-neon"
-        onClick={() => setBriefing(createBriefing())}
+        onClick=${() => setBriefing(createBriefing())}
       >
         Sortear Novo Briefing
       </button>
-      {!compact && (
-        <p className="mt-2 text-xs text-slate-400">
-          Use o briefing para simular um gig real e variar suas linhas.
-        </p>
-      )}
-    </motion.section>
-  );
+      ${!compact
+        ? html`
+            <p className="mt-2 text-xs text-slate-400">
+              Use o briefing para simular um gig real e variar suas linhas.
+            </p>
+          `
+        : ""}
+    </section>
+  `;
 };
 
 const createBriefing = () => {
@@ -639,12 +623,12 @@ const App = () => {
     }
   }, []);
 
-  return (
-    <BassTheoryProvider>
-      <AppShell />
-    </BassTheoryProvider>
-  );
+  return html`
+    <${BassTheoryProvider}>
+      <${AppShell} />
+    </${BassTheoryProvider}>
+  `;
 };
 
 const root = createRoot(document.getElementById("root"));
-root.render(<App />);
+root.render(html`<${App} />`);
