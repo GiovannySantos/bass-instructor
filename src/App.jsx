@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   STORAGE_KEYS,
   getBool,
+  getJSON,
   getString,
   setBool,
+  setJSON,
   setString,
 } from "./infra/storage.js";
 import {
@@ -13,7 +15,14 @@ import {
   useBassTheory,
   validateTarget,
 } from "./components/BassDojo.jsx";
+import { INSTRUMENT_PRESETS, buildInstrument } from "./domain/instrument/instrument.js";
 import AppShell from "./shell/AppShell.jsx";
+
+const DEFAULT_INSTRUMENT = {
+  presetId: "4EADG",
+  stringCount: 4,
+  tuning: ["E", "A", "D", "G"],
+};
 
 const AppContent = () => {
   const location = useLocation();
@@ -47,6 +56,18 @@ const AppContent = () => {
     return getString(STORAGE_KEYS.stageCue, "");
   });
 
+  const [instrument, setInstrument] = useState(() => {
+    if (typeof window === "undefined") return DEFAULT_INSTRUMENT;
+    const saved = getJSON(STORAGE_KEYS.instrument, null);
+    if (!saved || !Array.isArray(saved.tuning)) return DEFAULT_INSTRUMENT;
+    const built = buildInstrument({ tuning: saved.tuning, strings: saved.stringCount });
+    return {
+      presetId: saved.presetId || DEFAULT_INSTRUMENT.presetId,
+      stringCount: built.stringCount,
+      tuning: built.tuning,
+    };
+  });
+
   useEffect(() => {
     const root = document.documentElement;
     if (darkMode) {
@@ -71,6 +92,10 @@ const AppContent = () => {
     setString(STORAGE_KEYS.stageCue, stageCue);
   }, [stageCue]);
 
+  useEffect(() => {
+    setJSON(STORAGE_KEYS.instrument, instrument);
+  }, [instrument]);
+
   const handleGameAnswer = (noteIndex) => {
     const result = validateTarget(target, noteIndex, rootNote);
     if (result.correct) {
@@ -86,6 +111,30 @@ const AppContent = () => {
 
   const handleModeChange = (mode) => {
     navigate(mode === "palco" ? "/stage" : "/train");
+  };
+
+  const setInstrumentPreset = (presetId) => {
+    const preset = INSTRUMENT_PRESETS.find((item) => item.id === presetId);
+    if (!preset) return;
+    if (presetId === "custom") {
+      setInstrument((prev) => ({ ...prev, presetId: "custom" }));
+      return;
+    }
+    const built = buildInstrument({ tuning: preset.tuning, strings: preset.tuning.length });
+    setInstrument({
+      presetId: preset.id,
+      stringCount: built.stringCount,
+      tuning: built.tuning,
+    });
+  };
+
+  const setCustomTuning = (tuning, stringCount) => {
+    const built = buildInstrument({ tuning, strings: stringCount });
+    setInstrument({
+      presetId: "custom",
+      stringCount: built.stringCount,
+      tuning: built.tuning,
+    });
   };
 
   return (
@@ -124,6 +173,9 @@ const AppContent = () => {
           stageCue,
           setStageCue,
           handleGameAnswer,
+          instrument,
+          setInstrumentPreset,
+          setCustomTuning,
         }}
       />
     </AppShell>
@@ -145,3 +197,4 @@ const App = () => {
 };
 
 export default App;
+

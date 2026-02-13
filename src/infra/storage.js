@@ -1,4 +1,4 @@
-export const STORAGE_KEYS = {
+﻿export const STORAGE_KEYS = {
   mode: "bassdojo:mode",
   dark: "bassdojo:dark",
   stageNotes: "bassdojo:stage-notes",
@@ -6,6 +6,8 @@ export const STORAGE_KEYS = {
   trainLastTab: "bassdojo:train:lastTab",
   trainLastSession: "bassdojo:train:lastSession",
   trainHistory: "bassdojo:train:history",
+  instrument: "bassdojo:instrument",
+  fretboardFilter: "bassdojo:fretboard:filter",
   schemaVersion: "bassdojo:schemaVersion",
 };
 
@@ -88,3 +90,4 @@ export function setJSON(key, value) {
     console.warn("[storage] setJSON failed", error);
   }
 }
+

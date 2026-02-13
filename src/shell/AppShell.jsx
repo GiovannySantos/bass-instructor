@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useState } from "react";
 import {
   ControlPanel,
   GrooveBriefing,
@@ -23,21 +23,7 @@ const AppShell = ({
   setIncludeSixteenths,
 }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [coreOpen, setCoreOpen] = useState(false);
-  const coreMenuRef = useRef(null);
   const { rootNote } = useBassTheory();
-
-  useEffect(() => {
-    if (!coreOpen) return;
-    const handleClickOutside = (event) => {
-      if (!coreMenuRef.current) return;
-      if (!coreMenuRef.current.contains(event.target)) {
-        setCoreOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [coreOpen]);
 
   return (
     <div
@@ -65,19 +51,6 @@ const AppShell = ({
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <ModeToggle appMode={appMode} setAppMode={setAppMode} />
-              <div className="relative" ref={coreMenuRef}>
-                <button
-                  className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                  onClick={() => setCoreOpen((prev) => !prev)}
-                >
-                  Núcleo Musical
-                </button>
-                <div className={`dropdown-panel ${coreOpen ? "open" : ""}`}>
-                  <div className="dropdown-surface">
-                    <ControlPanel compact showTitle={false} />
-                  </div>
-                </div>
-              </div>
 
               <button
                 className="hidden rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 md:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
@@ -105,6 +78,8 @@ const AppShell = ({
               </button>
             </div>
           </div>
+
+          <ControlPanel compact={false} showTitle={false} variant="bar" />
         </header>
 
         <main className="flex-1 pt-6">{children}</main>
@@ -141,15 +116,6 @@ const AppShell = ({
           <div className="space-y-4">
             <ModeToggle appMode={appMode} setAppMode={setAppMode} compact />
             <button
-              className="w-full rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-              onClick={() => {
-                setDrawerOpen(false);
-                setCoreOpen((prev) => !prev);
-              }}
-            >
-              Núcleo Musical
-            </button>
-            <button
               className="w-full rounded-full border border-slate-300 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white dark:border-slate-700 dark:bg-slate-100 dark:text-slate-900"
               onClick={() => setDarkMode((prev) => !prev)}
               aria-label={darkMode ? "Modo claro" : "Modo escuro"}
@@ -167,7 +133,6 @@ const AppShell = ({
               </span>
             </button>
 
-            <ControlPanel compact />
             <MetronomePanel
               compact
               bpm={bpm}
@@ -188,3 +153,4 @@ const AppShell = ({
 };
 
 export default AppShell;
+
