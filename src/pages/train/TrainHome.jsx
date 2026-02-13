@@ -21,9 +21,9 @@ const TrainHome = () => {
   return (
     <section className="space-y-6">
       <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Sessoes</h2>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Escolha um foco rapido e comece a treinar.
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Sessões de treino</h2>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-tight">
+          Escolha um foco e comece agora.
         </p>
 
         {session && session.status === "active" && (
@@ -31,9 +31,11 @@ const TrainHome = () => {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-[0.6rem] uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-300">
-                  Continuar ultima
+                  Continuar: {session.title}
                 </p>
-                <p className="mt-1 font-semibold">{session.title}</p>
+                <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-200">
+                  Retomar no mesmo foco.
+                </p>
               </div>
               <button
                 className="rounded-full border border-emerald-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 transition hover:border-emerald-400 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
@@ -55,6 +57,12 @@ const TrainHome = () => {
             <h3 className="text-base font-semibold text-slate-900 dark:text-white">
               {preset.title}
             </h3>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Meta: {preset.goal.description}
+            </p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Tempo: {preset.durationMin} min
+            </p>
             <button
               className="mt-4 rounded-full border border-slate-300 bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white dark:border-slate-200 dark:bg-white dark:text-slate-900"
               onClick={() => startSession(preset)}
@@ -67,11 +75,11 @@ const TrainHome = () => {
 
       <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
         <h3 className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-          Historico recente
+          Histórico recente
         </h3>
         {history.length === 0 ? (
           <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-            Nenhuma sessao registrada ainda.
+            Nenhuma sessão registrada ainda.
           </p>
         ) : (
           <div className="mt-4 grid gap-3">
@@ -87,12 +95,12 @@ const TrainHome = () => {
                       {item.title}
                     </span>
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[0.6rem] uppercase tracking-[0.2em] text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
-                      {item.status === "completed" ? "Concluida" : "Encerrada"}
+                      {item.status === "completed" ? "Concluída" : "Encerrada"}
                     </span>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-3">
                     <span>
-                      Duracao: {durationMin} min
+                      Duração: {durationMin} min
                     </span>
                     <span>
                       Progresso: {item.progressValue} / {item.goal.target}

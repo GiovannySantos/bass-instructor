@@ -732,7 +732,7 @@ const StudiesPanel = ({ onCopy } = {}) => {
 
 
 
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Aba de Estudos</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Estudos</h2>
 
 
 
@@ -1696,7 +1696,7 @@ const MetronomePanel = ({
 
 
 
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Treino de Ritmo</h2>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Treino de ritmo</h2>
 
 
 
@@ -1948,7 +1948,7 @@ const FlashcardTrainer = ({ target, streak, feedback }) => {
 
 
 
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Cartões de Treino</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Cartões de treino</h2>
 
 
 

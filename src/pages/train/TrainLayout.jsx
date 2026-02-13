@@ -10,9 +10,9 @@ import {
 import { useBassTheory } from "../../components/BassDojo.jsx";
 
 const TABS = [
-  { label: "Braco", value: "fretboard" },
+  { label: "Braço", value: "fretboard" },
   { label: "Ritmo", value: "rhythm" },
-  { label: "Cartoes", value: "flashcards" },
+  { label: "Cartões", value: "flashcards" },
   { label: "Estudos", value: "studies" },
 ];
 
@@ -20,7 +20,7 @@ const DEFAULT_GOALS = {
   fretboard: {
     type: "fretboard.clicks",
     target: 20,
-    description: "Fazer 20 cliques no braco",
+    description: "Fazer 20 cliques no braço",
   },
   rhythm: {
     type: "rhythm.bpmReached",
@@ -30,12 +30,12 @@ const DEFAULT_GOALS = {
   flashcards: {
     type: "flashcards.correct",
     target: 10,
-    description: "Acertar 10 cartoes",
+    description: "Acertar 10 cartões",
   },
   studies: {
     type: "studies.copied",
     target: 1,
-    description: "Copiar uma secao de notas",
+    description: "Copiar uma seção de notas",
   },
 };
 
@@ -46,7 +46,7 @@ const normalizeSession = (raw) => {
   if (!goal) return null;
   return {
     sessionId: raw.sessionId || `legacy-${Date.now()}`,
-    title: raw.title || raw.name || "Sessao",
+    title: raw.title || raw.name || "Sessão",
     targetTab: raw.targetTab,
     goal,
     progress: raw.progress || { value: 0, target: goal.target },
@@ -207,11 +207,11 @@ const TrainLayout = () => {
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold uppercase tracking-[0.22em]">
-                  Sessao
+                  Sessão ativa
                 </span>
                 {activeSession.status === "completed" && (
                   <span className="rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.22em] text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
-                    Concluida
+                    Concluída
                   </span>
                 )}
               </div>
@@ -219,12 +219,12 @@ const TrainLayout = () => {
                 {activeSession.title}
               </div>
               <div className="text-[0.65rem] text-emerald-700 dark:text-emerald-200">
-                {activeSession.goal.description}
+                Meta: {activeSession.goal.description}
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-emerald-300 bg-white px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
-                {activeSession.progress.value} / {activeSession.progress.target}
+                Progresso: {activeSession.progress.value} / {activeSession.progress.target}
               </span>
               {activeSession.status === "completed" ? (
                 <button
@@ -234,7 +234,7 @@ const TrainLayout = () => {
                     navigate("/train");
                   }}
                 >
-                  Voltar para Sessoes
+                  Voltar às sessões
                 </button>
               ) : (
                 <button
