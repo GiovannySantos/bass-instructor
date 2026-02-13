@@ -1,25 +1,16 @@
-import { createContext, useContext, useMemo, useState } from "react";
+﻿import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 
 
-import { Chord, Interval } from "tonal";
+import { Chord } from "tonal";
 import useTapTempo from "../hooks/useTapTempo.js";
+import { getFretNote } from "../domain/instrument/instrument.js";
+import { NOTES, getDiatonicChords, getIntervalLabel, getScale } from "../domain/music/engine.js";
+import { getString, setString, STORAGE_KEYS } from "../infra/storage.js";
 
 
 
 const BassTheoryContext = createContext(null);
-
-
-
-const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-
-
-
-const STRING_TUNING = ["G", "D", "A", "E"];
-
-
-
-const STRING_INDEX = [7, 2, 9, 4];
 
 
 
@@ -87,7 +78,7 @@ const SCALE_LABELS = {
 
 
 
-  pentatonicaMenor: "Pentatônica Menor",
+  pentatonicaMenor: "PentaTônica Menor",
 
 
 
@@ -187,345 +178,134 @@ const BassTheoryProvider = ({ children }) => {
 
 
 
-const ControlPanel = ({ compact = false, showTitle = true }) => {
-
-
-
+const ControlPanel = ({ compact = false, showTitle = true, variant = "card" }) => {
   const {
-
-
-
     rootNote,
-
-
-
     setRootNote,
-
-
-
     scaleMode,
-
-
-
     setScaleMode,
-
-
-
     displayMode,
-
-
-
     setDisplayMode,
-
-
-
     nnsMode,
-
-
-
     setNnsMode,
-
-
-
   } = useBassTheory();
 
+  const labelClass =
+    "text-[0.65rem] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500";
+  const selectClass =
+    "rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
 
+  if (variant === "bar") {
+    return (
+      <section className="rounded-3xl border border-slate-200 bg-white/80 p-4 shadow-[0_12px_40px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="grid gap-2">
+            <label className={labelClass}>Tônica</label>
+            <select className={selectClass} value={rootNote} onChange={(event) => setRootNote(event.target.value)}>
+              {NOTES.map((note) => (
+                <option key={note} value={note}>
+                  {note}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid gap-2">
+            <label className={labelClass}>Modo</label>
+            <select className={selectClass} value={scaleMode} onChange={(event) => setScaleMode(event.target.value)}>
+              {Object.entries(SCALE_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid gap-2">
+            <label className={labelClass}>Exibição</label>
+            <div className="flex gap-2">
+              {["notas", "intervalos"].map((mode) => (
+                <button
+                  key={mode}
+                  className={`rounded-2xl border px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
+                    displayMode === mode
+                      ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
+                      : "border-slate-200 bg-white text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
+                  }`}
+                  onClick={() => setDisplayMode(mode)}
+                >
+                  {mode === "notas" ? "Notas" : "Intervalos"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-
-
-
     <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
-
-
-
       {showTitle && (
-
-
-
         <div className="mb-5 flex items-center justify-between">
-
-
-
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Núcleo Musical</h2>
-
-
-
           {!compact && (
-
-
-
             <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
-
-
-
               Configuração
-
-
-
             </span>
-
-
-
           )}
-
-
-
         </div>
-
-
-
       )}
 
-
-
       <div className="grid gap-4">
-
-
-
         <div className="grid gap-2">
-
-
-
-          <label className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
-
-
-
-            Tônica
-
-
-
-          </label>
-
-
-
-          <select
-
-
-
-            className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-
-
-
-            value={rootNote}
-
-
-
-            onChange={(event) => setRootNote(event.target.value)}
-
-
-
-          >
-
-
-
+          <label className={labelClass}>Tônica</label>
+          <select className={selectClass} value={rootNote} onChange={(event) => setRootNote(event.target.value)}>
             {NOTES.map((note) => (
-
-
-
               <option key={note} value={note}>
-
-
-
                 {note}
-
-
-
               </option>
-
-
-
             ))}
-
-
-
           </select>
-
-
-
         </div>
 
-
-
         <div className="grid gap-2">
-
-
-
-          <label className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
-
-
-
-            Modo
-
-
-
-          </label>
-
-
-
-          <select
-
-
-
-            className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-
-
-
-            value={scaleMode}
-
-
-
-            onChange={(event) => setScaleMode(event.target.value)}
-
-
-
-          >
-
-
-
+          <label className={labelClass}>Modo</label>
+          <select className={selectClass} value={scaleMode} onChange={(event) => setScaleMode(event.target.value)}>
             {Object.entries(SCALE_LABELS).map(([key, label]) => (
-
-
-
               <option key={key} value={key}>
-
-
-
                 {label}
-
-
-
               </option>
-
-
-
             ))}
-
-
-
           </select>
-
-
-
         </div>
-
-
 
         <div className="grid gap-2">
-
-
-
-          <label className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
-
-
-
-            Exibição
-
-
-
-          </label>
-
-
-
+          <label className={labelClass}>Exibição</label>
           <div className="flex gap-2">
-
-
-
             {["notas", "intervalos"].map((mode) => (
-
-
-
               <button
-
-
-
                 key={mode}
-
-
-
                 className={`flex-1 rounded-2xl border px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
-
-
-
                   displayMode === mode
-
-
-
                     ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
-
-
-
                     : "border-slate-200 bg-white text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
-
-
-
                 }`}
-
-
-
                 onClick={() => setDisplayMode(mode)}
-
-
-
               >
-
-
-
                 {mode === "notas" ? "Notas" : "Intervalos"}
-
-
-
               </button>
-
-
-
             ))}
-
-
-
           </div>
-
-
-
         </div>
-
-
 
         {!compact && (
-
-
-
           <p className="text-xs text-slate-400 dark:text-slate-500">
-
-
-
             Sem áudio: apenas guia visual e interação.
-
-
-
           </p>
-
-
-
         )}
-
-
-
       </div>
-
-
-
     </section>
-
-
-
   );
-
-
-
 };
-
-
 
 const ModeToggle = ({ appMode, setAppMode, compact = false }) => {
 
@@ -619,6 +399,15 @@ const ModeToggle = ({ appMode, setAppMode, compact = false }) => {
 
 
 
+
+const MODE_MAP = {
+  maior: "ionian",
+  menor: "aeolian",
+  dorico: "dorian",
+  mixolidio: "mixolydian",
+  frigio: "phrygian",
+};
+
 const buildScaleNotes = (rootNote, scaleMode) => {
 
 
@@ -627,6 +416,11 @@ const buildScaleNotes = (rootNote, scaleMode) => {
 
 
 
+  const mapped = MODE_MAP[scaleMode];
+  if (mapped) {
+    const scale = getScale({ root: rootNote, mode: mapped });
+    return scale.intervals.map((interval) => (rootIndex + interval) % 12);
+  }
   return SCALE_LIBRARY[scaleMode].map((interval) => (rootIndex + interval) % 12);
 
 
@@ -848,82 +642,48 @@ const StudiesPanel = ({ onCopy } = {}) => {
 
 
 
-          const noteIndexes = buildScaleNotes(rootNote, scaleKey);
+const isDiatonic = Boolean(MODE_MAP[scaleKey]);
+          let notes = [];
+          let intervals = [];
+          let chords = [];
 
-
-
-          const notes = noteIndexes.map((idx) => NOTES[idx]);
-
-
-
-          const intervals = SCALE_LIBRARY[scaleKey].map((value) => Interval.fromSemitones(value));
-
-
-
-            const chords = noteIndexes.map((_, index) => {
-
-
-
-              const chordNotes = [
-
-
-
-                notes[index % notes.length],
-
-
-
-                notes[(index + 2) % notes.length],
-
-
-
-                notes[(index + 4) % notes.length],
-
-
-
-                notes[(index + 6) % notes.length],
-
-
-
-              ];
-
-
-
-              const detected = Chord.detect(chordNotes);
-
-
-
+          if (isDiatonic) {
+            const mode = MODE_MAP[scaleKey];
+            const scale = getScale({ root: rootNote, mode });
+            notes = scale.notes;
+            intervals = scale.intervals.map(getIntervalLabel);
+            const chordData = getDiatonicChords({ root: rootNote, mode, type: "sevenths" });
+            chords = chordData.chords.map((chord, index) => {
+              const detected = Chord.detect(chord.notes);
               return {
-
-
-
                 degree:
-
-
-
                   nnsMode === "romanos"
-
-
-
                     ? roman[index] || `${index + 1}`
-
-
-
                     : numbers[index] || `${index + 1}`,
-
-
-
-                symbol: detected[0] || chordNotes.join("-"),
-
-
-
+                symbol: detected[0] || chord.notes.join("-"),
               };
-
-
-
             });
-
-
-
+          } else {
+            const noteIndexes = buildScaleNotes(rootNote, scaleKey);
+            notes = noteIndexes.map((idx) => NOTES[idx]);
+            intervals = SCALE_LIBRARY[scaleKey].map((value) => getIntervalLabel(value));
+            chords = noteIndexes.map((_, index) => {
+              const chordNotes = [
+                notes[index % notes.length],
+                notes[(index + 2) % notes.length],
+                notes[(index + 4) % notes.length],
+                notes[(index + 6) % notes.length],
+              ];
+              const detected = Chord.detect(chordNotes);
+              return {
+                degree:
+                  nnsMode === "romanos"
+                    ? roman[index] || `${index + 1}`
+                    : numbers[index] || `${index + 1}`,
+                symbol: detected[0] || chordNotes.join("-"),
+              };
+            });
+          }
           return (
 
 
@@ -1252,378 +1012,297 @@ const validateTarget = (target, noteIndex, rootNote) => {
 
 
 
-const SmartFretboard = ({ onNoteSelect }) => {
-
-
-
+const SmartFretboard = ({ onNoteSelect, tuning }) => {
   const { rootNote, scaleMode, displayMode } = useBassTheory();
-
-
-
   const scaleNotes = buildScaleNotes(rootNote, scaleMode);
-
-
-
   const chordNotes = CHORD_DEGREES.map((degree) => scaleNotes[degree]).filter(Boolean);
-
-
-
   const [activeString, setActiveString] = useState(null);
-
-
-
   const [playedNote, setPlayedNote] = useState(null);
+  const tuningNotes = (tuning && tuning.length ? tuning : ["E", "A", "D", "G"]).slice().reverse();
+  const isCompact = tuningNotes.length >= 6;
+  const fretCount = FRET_COUNT;
+  const gridTemplate = `64px repeat(${fretCount}, minmax(56px, 1fr))`;
+  const markerRows = Math.max(tuningNotes.length - 1, 1);
+  const markerFrets = [3, 5, 7, 9, 12];
+  const [filters, setFilters] = useState([]);
 
-
-
-  const handlePlay = (noteIndex, stringIndex) => {
-
-
-
-    setActiveString(stringIndex);
-
-
-
-    setPlayedNote(noteIndex);
-
-
-
-    setTimeout(() => setActiveString(null), 300);
-
-
-
-    if (onNoteSelect) onNoteSelect(noteIndex);
-
-
-
+  const chipActiveClass = {
+    root: "bg-slate-950 border-slate-900 text-white",
+    third: "bg-violet-700 border-violet-800 text-white",
+    fifth: "bg-rose-600 border-rose-700 text-white",
+    chord: "bg-cyan-700 border-cyan-800 text-white",
+    scale: "bg-lime-600 border-lime-700 text-white",
   };
 
+  const cellBase = "note-token rounded-full border shadow-sm";
+  const cellScale = chipActiveClass.scale;
+  const cellChord = chipActiveClass.chord;
+  const cellRoot = chipActiveClass.root;
+  const cellThird = chipActiveClass.third;
+  const cellFifth = chipActiveClass.fifth;
+  const cellSeventh = chipActiveClass.chord;
+  const cellNeutral = "bg-slate-100 border-slate-200 text-slate-600";
 
+  const getRoleForCell = ({ isRoot, isThird, isFifth, isSeventh, isChord, isScale }) => {
+    if (isRoot) return "root";
+    if (isThird) return "third";
+    if (isFifth) return "fifth";
+    if (isSeventh) return "seventh";
+    if (isChord) return "chord";
+    if (isScale) return "scale";
+    return "neutral";
+  };
+
+  const getCellClass = (role, { isOpen, isActive }) => {
+    const roleClass =
+      role === "root"
+        ? cellRoot
+        : role === "third"
+        ? cellThird
+        : role === "fifth"
+        ? cellFifth
+        : role === "seventh"
+        ? cellSeventh
+        : role === "chord"
+        ? cellChord
+        : role === "scale"
+        ? cellScale
+        : cellNeutral;
+    const openClass = isOpen ? "ring-1 ring-slate-400" : "";
+    const activeClass = isActive ? "ring-2 ring-slate-900/60" : "";
+    const hoverClass = "hover:-translate-y-0.5 hover:shadow-md active:scale-95";
+    const sizeClass = isCompact ? "px-2.5 py-1.5 text-[0.7rem]" : "px-3 py-2 text-xs sm:text-sm";
+    const focusClass = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80";
+    return `${cellBase} ${roleClass} ${openClass} ${activeClass} ${hoverClass} ${sizeClass} ${focusClass}`.trim();
+  };
+
+  useEffect(() => {
+    const stored = getString(STORAGE_KEYS.fretboardFilter, "all");
+    if (!stored || stored === "all") {
+      setFilters([]);
+      return;
+    }
+    const parsed = stored
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    setFilters(parsed);
+  }, []);
+
+  useEffect(() => {
+    const stored = filters.length ? filters.join(",") : "all";
+    setString(STORAGE_KEYS.fretboardFilter, stored);
+  }, [filters]);
+
+  const toggleFilter = (value) => {
+    setFilters((current) => {
+      const next = new Set(current);
+      if (next.has(value)) {
+        next.delete(value);
+      } else {
+        next.add(value);
+      }
+      return Array.from(next);
+    });
+  };
+
+  const handlePlay = (noteIndex, stringIndex) => {
+    setActiveString(stringIndex);
+    setPlayedNote(noteIndex);
+    setTimeout(() => setActiveString(null), 300);
+    if (onNoteSelect) onNoteSelect(noteIndex);
+  };
 
   return (
-
-
-
     <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900/70">
-
-
-
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-
-
-
         <div>
-
-
-
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Braço Inteligente</h2>
-
-
-
           <p className="text-xs text-slate-500 dark:text-slate-400">
-
-
-
             Notas seguras destacadas. Clique para treinar a posição.
-
-
-
           </p>
-
-
-
         </div>
-
-
-
         <div className="flex flex-wrap items-center gap-2">
-
-
-
-          <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
-
-
-
+          <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
             {rootNote} • {SCALE_LABELS[scaleMode]}
-
-
-
           </div>
-
-
-
-          <div className="flex items-center gap-2 text-[0.6rem] uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">
-
-
-
-            <span className="legend-pill legend-root">Tônica</span>
-
-
-
-            <span className="legend-pill legend-chord">Acorde</span>
-
-
-
-            <span className="legend-pill legend-scale">Escala</span>
-
-
-
+          <div className="flex flex-wrap items-center gap-2 text-[0.6rem] uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+            <button
+              type="button"
+              onClick={() => toggleFilter("root")}
+              className={`note-token-mini ${
+                filters.length === 0 || filters.includes("root")
+                  ? chipActiveClass.root
+                  : "bg-white border-slate-300 text-slate-700"
+              }`}
+            >
+              Tônica
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleFilter("third")}
+              className={`note-token-mini ${
+                filters.length === 0 || filters.includes("third")
+                  ? chipActiveClass.third
+                  : "bg-white border-slate-300 text-slate-700"
+              }`}
+            >
+              3ª
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleFilter("fifth")}
+              className={`note-token-mini ${
+                filters.length === 0 || filters.includes("fifth")
+                  ? chipActiveClass.fifth
+                  : "bg-white border-slate-300 text-slate-700"
+              }`}
+            >
+              5ª
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleFilter("chord")}
+              className={`note-token-mini ${
+                filters.length === 0 || filters.includes("chord")
+                  ? chipActiveClass.chord
+                  : "bg-white border-slate-300 text-slate-700"
+              }`}
+            >
+              Acorde
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleFilter("scale")}
+              className={`note-token-mini ${
+                filters.length === 0 || filters.includes("scale")
+                  ? chipActiveClass.scale
+                  : "bg-white border-slate-300 text-slate-700"
+              }`}
+            >
+              Escala
+            </button>
           </div>
-
-
-
         </div>
-
-
-
       </div>
 
-
-
-      <div className="space-y-4">
-
-
-
-        <div className="fret-marker-row">
-
-
-
-          {Array.from({ length: FRET_COUNT + 1 }, (_, fret) => {
-
-
-
-            const dotFrets = new Set([3, 5, 7, 9, 12]);
-
-
-
-            const showDot = dotFrets.has(fret);
-
-
-
+      <div className="fretboard-board">
+        <div className="fret-separators" style={{ gridTemplateColumns: gridTemplate }}>
+          {Array.from({ length: fretCount + 1 }, (_, index) => (
+            <div
+              key={`sep-${index}`}
+              className={`fret-separator ${index === 1 ? "fret-separator-nut" : ""}`}
+            />
+          ))}
+        </div>
+        <div
+          className="fret-markers"
+          style={{
+            gridTemplateColumns: gridTemplate,
+            gridTemplateRows: `repeat(${markerRows}, 1fr)`,
+          }}
+        >
+          {Array.from({ length: markerRows }, (_, rowIndex) =>
+            markerFrets.map((fret) => (
+              <div
+                key={`marker-${rowIndex}-${fret}`}
+                className={`fret-marker-dot ${fret === 12 ? "fret-marker-double" : ""}`}
+                style={{ gridColumn: fret + 1, gridRow: rowIndex + 1 }}
+              />
+            ))
+          )}
+        </div>
+        <div className="fretboard-rows">
+          {tuningNotes.map((stringName, stringIdx) => {
+            const thickness = Math.max(1, 2.4 - stringIdx * 0.3);
             return (
-
-
-
-              <div key={`marker-${fret}`} className="fret-marker" data-dot={showDot}>
-
-
-
-                {fret === 0 ? "0" : fret}
-
-
-
-              </div>
-
-
-
-            );
-
-
-
-          })}
-
-
-
-        </div>
-
-
-
-        {STRING_TUNING.map((stringName, stringIdx) => (
-
-
-
-          <div
-
-
-
-            key={stringName}
-
-
-
-            className={`string-row ${activeString === stringIdx ? "vibrate" : ""}`}
-
-
-
-          >
-
-
-
-            <div className="fretboard-grid">
-
-
-
-              {Array.from({ length: FRET_COUNT + 1 }, (_, fret) => {
-
-
-
-                const noteIndex = (STRING_INDEX[stringIdx] + fret) % 12;
-
-
-
+              <div
+                key={stringName}
+                className={`string-row ${activeString === stringIdx ? "vibrate" : ""}`}
+                style={{ gridTemplateColumns: gridTemplate }}
+              >
+                <div className="string-line" style={{ height: `${thickness}px` }} />
+                {Array.from({ length: fretCount + 1 }, (_, fret) => {
+                const noteLabel = getFretNote({ tuningNote: stringName, fret });
+                const noteIndex = NOTES.indexOf(noteLabel);
                 const isScale = scaleNotes.includes(noteIndex);
-
-
-
                 const isChord = chordNotes.includes(noteIndex);
-
-
-
-                const isRoot = noteIndex === NOTES.indexOf(rootNote);
-
-
-
-                const label =
-
-
-
-                  displayMode === "notas"
-
-
-
-                    ? NOTES[noteIndex]
-
-
-
-                    : isRoot
-
-
-
-                    ? "R"
-
-
-
-                    : isChord
-
-
-
-                    ? ["3", "5", "7"][chordNotes.indexOf(noteIndex) - 1] || ""
-
-
-
-                    : "";
-
-
-
-                const baseClasses = isScale
-
-
-
-                  ? "border-slate-200 dark:border-slate-700"
-
-
-
-                  : "border-transparent opacity-25";
-
-
-
-                const highlight = isRoot
-
-
-
-                  ? "fret-root border-transparent text-white"
-
-
-
-                  : isChord
-
-
-
-                  ? "fret-chord border-transparent"
-
-
-
-                  : isScale
-
-
-
-                  ? "fret-scale border-transparent"
-
-
-
-                  : "fret-muted border-transparent";
-
-
-
-                const played = playedNote === noteIndex ? "glow-ring" : "";
-
-
-
+                const scaleRootIndex = scaleNotes[0];
+                const thirdIndex = scaleNotes[2];
+                const fifthIndex = scaleNotes[4];
+                const seventhIndex = scaleNotes[6];
+                const isRoot = noteIndex === scaleRootIndex;
+                const isThird = noteIndex === thirdIndex;
+                const isFifth = noteIndex === fifthIndex;
+                const isSeventh = noteIndex === seventhIndex;
+                const rootNoteIndex = NOTES.indexOf(rootNote);
+                const interval =
+                  rootNoteIndex >= 0 ? (noteIndex - rootNoteIndex + 12) % 12 : 0;
+                const intervalLabel = getIntervalLabel(interval);
+                const label = displayMode === "intervalos" ? intervalLabel : noteLabel;
+                const intervalIsThird = intervalLabel.startsWith("3");
+                const intervalIsFifth = intervalLabel.startsWith("5");
+                const intervalIsSeventh = intervalLabel.startsWith("7");
+                const intervalIsRoot = intervalLabel.startsWith("1");
+                const thirdMatch =
+                  displayMode === "intervalos" ? intervalIsThird : isThird;
+                const fifthMatch =
+                  displayMode === "intervalos" ? intervalIsFifth : isFifth;
+                const seventhMatch =
+                  displayMode === "intervalos" ? intervalIsSeventh : isSeventh;
+                const rootMatch =
+                  displayMode === "intervalos" ? intervalIsRoot : isRoot;
+                let role = getRoleForCell({
+                  isRoot: rootMatch,
+                  isThird: thirdMatch,
+                  isFifth: fifthMatch,
+                  isSeventh: seventhMatch,
+                  isChord,
+                  isScale,
+                });
+                const isChordTone =
+                  isChord || rootMatch || thirdMatch || fifthMatch || seventhMatch;
+                const isScaleTone = isScale;
+                if (filters.length) {
+                  const allowRoot = filters.includes("root") && rootMatch;
+                  const allowThird = filters.includes("third") && thirdMatch;
+                  const allowFifth = filters.includes("fifth") && fifthMatch;
+                  const allowChord = filters.includes("chord") && isChordTone;
+                  const allowScale = filters.includes("scale") && isScaleTone;
+                  const isAllowed =
+                    allowRoot || allowThird || allowFifth || allowChord || allowScale;
+                  if (!isAllowed) role = "neutral";
+                }
+                const isActive = playedNote === noteIndex;
+                const className = getCellClass(role, {
+                  isOpen: fret === 0,
+                  isActive,
+                });
                 return (
-
-
-
-                  <button
-
-
-
+                  <div
                     key={`${stringName}-${fret}`}
-
-
-
-                    className={`fret-cell rounded-xl border px-2 py-3 text-xs font-semibold transition ${baseClasses} ${highlight} ${played}`}
-
-
-
-                    onClick={() => handlePlay(noteIndex, stringIdx)}
-
-
-
+                    className={`fret-cell-slot ${fret === 0 ? "fret-slot-open" : ""}`}
                     data-fret={fret}
-
-
-
                     data-string={stringName}
-
-
-
                   >
-
-
-
-                    {fret === 0 ? stringName : label || "•"}
-
-
-
-                  </button>
-
-
-
+                    <button
+                      className={className}
+                      onClick={() => handlePlay(noteIndex, stringIdx)}
+                      type="button"
+                    >
+                      {label || "?"}
+                    </button>
+                  </div>
                 );
-
-
-
               })}
-
-
-
-            </div>
-
-
-
-          </div>
-
-
-
-        ))}
-
-
-
+              </div>
+            );
+          })}
+        </div>
       </div>
-
-
-
     </section>
-
-
-
   );
-
-
-
 };
-
-
-
 const MetronomePanel = ({
 
 
@@ -2295,3 +1974,8 @@ export {
   FlashcardTrainer,
   GrooveBriefing,
 };
+
+
+
+
+
