@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+import { useMemo } from "react";
 import { Chord, Interval, Note, Scale } from "tonal";
 
 export type ChordShape = {

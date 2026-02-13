@@ -11,7 +11,7 @@ const useTapTempo = ({
   maxBpm = Number.POSITIVE_INFINITY,
 } = {}) => {
   const [bpm, setBpm] = useState(initialBpm);
-  const [taps, setTaps] = useState([]);
+  const [_taps, setTaps] = useState([]);
 
   const tap = useCallback(() => {
     const now = Date.now();

@@ -1,4 +1,4 @@
-﻿export const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   mode: "bassdojo:mode",
   dark: "bassdojo:dark",
   stageNotes: "bassdojo:stage-notes",
@@ -33,7 +33,7 @@ export function getString(key, fallback = "") {
   try {
     const value = window.localStorage.getItem(key);
     return value === null ? fallback : value;
-  } catch (error) {
+  } catch {
     return fallback;
   }
 }
@@ -57,7 +57,7 @@ export function getBool(key, fallback = false) {
     if (normalized === "true" || normalized === "1") return true;
     if (normalized === "false" || normalized === "0") return false;
     return fallback;
-  } catch (error) {
+  } catch {
     return fallback;
   }
 }
@@ -77,7 +77,7 @@ export function getJSON(key, fallback = null) {
     const value = window.localStorage.getItem(key);
     if (value === null) return fallback;
     return JSON.parse(value);
-  } catch (error) {
+  } catch {
     return fallback;
   }
 }

@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 
 
@@ -186,8 +186,8 @@ const ControlPanel = ({ compact = false, showTitle = true, variant = "card" }) =
     setScaleMode,
     displayMode,
     setDisplayMode,
-    nnsMode,
-    setNnsMode,
+    nnsMode: _nnsMode,
+    setNnsMode: _setNnsMode,
   } = useBassTheory();
 
   const labelClass =
@@ -1079,6 +1079,7 @@ const SmartFretboard = ({ onNoteSelect, tuning }) => {
   useEffect(() => {
     const stored = getString(STORAGE_KEYS.fretboardFilter, "all");
     if (!stored || stored === "all") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFilters([]);
       return;
     }
@@ -1956,6 +1957,7 @@ const createBriefing = () => {
 
 
 
+/* eslint-disable react-refresh/only-export-components */
 export {
   BassTheoryProvider,
   useBassTheory,
@@ -1974,6 +1976,7 @@ export {
   FlashcardTrainer,
   GrooveBriefing,
 };
+/* eslint-enable react-refresh/only-export-components */
 
 
 
