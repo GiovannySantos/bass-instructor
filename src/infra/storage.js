@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   stageNotes: "bassdojo:stage-notes",
   stageCue: "bassdojo:stage-cue",
   trainLastTab: "bassdojo:train:lastTab",
+  trainLastSession: "bassdojo:train:lastSession",
   schemaVersion: "bassdojo:schemaVersion",
 };
 
