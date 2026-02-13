@@ -635,7 +635,7 @@ const buildScaleNotes = (rootNote, scaleMode) => {
 
 
 
-const StudiesPanel = () => {
+const StudiesPanel = ({ onCopy } = {}) => {
 
 
 
@@ -692,6 +692,7 @@ const StudiesPanel = () => {
 
 
       setCopiedKey(scaleKey);
+      if (onCopy) onCopy();
 
 
 
