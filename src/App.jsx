@@ -1,4 +1,12 @@
 import { useEffect, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import {
+  STORAGE_KEYS,
+  getBool,
+  getString,
+  setBool,
+  setString,
+} from "./infra/storage.js";
 import {
   BassTheoryProvider,
   randomTarget,
@@ -6,25 +14,21 @@ import {
   validateTarget,
 } from "./components/BassDojo.jsx";
 import AppShell from "./shell/AppShell.jsx";
-import TrainPage from "./pages/TrainPage.jsx";
-import StagePage from "./pages/StagePage.jsx";
 
 const AppContent = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [target, setTarget] = useState(() => randomTarget());
   const [streak, setStreak] = useState(0);
   const [feedback, setFeedback] = useState(null);
   const { rootNote, scaleMode } = useBassTheory();
 
-  const [appMode, setAppMode] = useState(() => {
-    if (typeof window === "undefined") return "treino";
-    const saved = window.localStorage.getItem("bassdojo:mode");
-    return saved === "palco" ? "palco" : "treino";
-  });
+  const appMode = location.pathname.startsWith("/stage") ? "palco" : "treino";
 
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === "undefined") return false;
-    const saved = window.localStorage.getItem("bassdojo:dark");
-    if (saved !== null) return saved === "true";
+    const saved = getBool(STORAGE_KEYS.dark, null);
+    if (saved !== null) return saved;
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
 
@@ -35,12 +39,12 @@ const AppContent = () => {
 
   const [stageNotes, setStageNotes] = useState(() => {
     if (typeof window === "undefined") return "";
-    return window.localStorage.getItem("bassdojo:stage-notes") || "";
+    return getString(STORAGE_KEYS.stageNotes, "");
   });
 
   const [stageCue, setStageCue] = useState(() => {
     if (typeof window === "undefined") return "";
-    return window.localStorage.getItem("bassdojo:stage-cue") || "";
+    return getString(STORAGE_KEYS.stageCue, "");
   });
 
   useEffect(() => {
@@ -50,21 +54,21 @@ const AppContent = () => {
     } else {
       root.classList.remove("dark");
     }
-    window.localStorage.setItem("bassdojo:dark", String(darkMode));
+    setBool(STORAGE_KEYS.dark, darkMode);
   }, [darkMode]);
 
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle("mode-stage", appMode === "palco");
-    window.localStorage.setItem("bassdojo:mode", appMode);
+    setString(STORAGE_KEYS.mode, appMode);
   }, [appMode]);
 
   useEffect(() => {
-    window.localStorage.setItem("bassdojo:stage-notes", stageNotes);
+    setString(STORAGE_KEYS.stageNotes, stageNotes);
   }, [stageNotes]);
 
   useEffect(() => {
-    window.localStorage.setItem("bassdojo:stage-cue", stageCue);
+    setString(STORAGE_KEYS.stageCue, stageCue);
   }, [stageCue]);
 
   const handleGameAnswer = (noteIndex) => {
@@ -80,10 +84,14 @@ const AppContent = () => {
     setTimeout(() => setFeedback(null), 900);
   };
 
+  const handleModeChange = (mode) => {
+    navigate(mode === "palco" ? "/stage" : "/train");
+  };
+
   return (
     <AppShell
       appMode={appMode}
-      setAppMode={setAppMode}
+      setAppMode={handleModeChange}
       darkMode={darkMode}
       setDarkMode={setDarkMode}
       bpm={bpm}
@@ -95,33 +103,29 @@ const AppContent = () => {
       includeSixteenths={includeSixteenths}
       setIncludeSixteenths={setIncludeSixteenths}
     >
-      {appMode === "palco" ? (
-        <StagePage
-          bpm={bpm}
-          setBpm={setBpm}
-          rootNote={rootNote}
-          scaleMode={scaleMode}
-          stageNotes={stageNotes}
-          setStageNotes={setStageNotes}
-          stageCue={stageCue}
-          setStageCue={setStageCue}
-        />
-      ) : (
-        <TrainPage
-          onNoteSelect={handleGameAnswer}
-          target={target}
-          streak={streak}
-          feedback={feedback}
-          bpm={bpm}
-          setBpm={setBpm}
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          includeEighths={includeEighths}
-          setIncludeEighths={setIncludeEighths}
-          includeSixteenths={includeSixteenths}
-          setIncludeSixteenths={setIncludeSixteenths}
-        />
-      )}
+      <Outlet
+        context={{
+          appMode,
+          target,
+          streak,
+          feedback,
+          bpm,
+          setBpm,
+          isPlaying,
+          setIsPlaying,
+          includeEighths,
+          setIncludeEighths,
+          includeSixteenths,
+          setIncludeSixteenths,
+          rootNote,
+          scaleMode,
+          stageNotes,
+          setStageNotes,
+          stageCue,
+          setStageCue,
+          handleGameAnswer,
+        }}
+      />
     </AppShell>
   );
 };

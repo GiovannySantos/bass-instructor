@@ -26,3 +26,17 @@ INDETERMINADO (nao ha .nvmrc no repo)
 - Persistencia de modo/tema/campos de palco via localStorage em src/App.jsx
 - netlify.toml presente para deploy
 - Pasta dist/ presente (artefatos de build)
+
+## Tap tempo
+- Tap tempo unificado em src/hooks/useTapTempo.js
+- Usado em: src/components/BassDojo.jsx, src/pages/StagePage.jsx
+
+## Persistencia centralizada
+- Modulo: src/infra/storage.js
+- migrateIfNeeded chamado em: src/App.jsx
+- Keys e tipos:
+- mode: string
+- dark: bool
+- stage-notes: string
+- stage-cue: string
+- schemaVersion: number/string

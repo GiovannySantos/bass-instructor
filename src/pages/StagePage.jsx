@@ -1,16 +1,19 @@
+import { useOutletContext } from "react-router-dom";
 import { SCALE_LABELS } from "../components/BassDojo.jsx";
-import { useState } from "react";
+import useTapTempo from "../hooks/useTapTempo.js";
 
-const StagePage = ({
-  bpm,
-  setBpm,
-  rootNote,
-  scaleMode,
-  stageNotes,
-  setStageNotes,
-  stageCue,
-  setStageCue,
-}) => {
+const StagePage = () => {
+  const {
+    bpm,
+    setBpm,
+    rootNote,
+    scaleMode,
+    stageNotes,
+    setStageNotes,
+    stageCue,
+    setStageCue,
+  } = useOutletContext();
+
   return (
     <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
       <div className="space-y-6">
@@ -92,17 +95,21 @@ const StagePage = ({
 };
 
 const StageTempo = ({ bpm, setBpm }) => {
-  const [tapTimes, setTapTimes] = useState([]);
+  const { tap, setBpm: setTapBpm } = useTapTempo({
+    initialBpm: bpm,
+    minBpm: 40,
+    maxBpm: 220,
+  });
   const handleTap = () => {
-    const now = Date.now();
-    const updated = [...tapTimes, now].slice(-4);
-    setTapTimes(updated);
-    if (updated.length >= 2) {
-      const intervals = updated.slice(1).map((time, idx) => time - updated[idx]);
-      const avg = intervals.reduce((acc, val) => acc + val, 0) / intervals.length;
-      const nextBpm = Math.round(60000 / avg);
-      setBpm(Math.min(220, Math.max(40, nextBpm)));
+    const next = tap();
+    if (next !== null) {
+      setBpm(next);
     }
+  };
+  const handleRangeChange = (event) => {
+    const value = Number(event.target.value);
+    setBpm(value);
+    setTapBpm(value);
   };
 
   return (
@@ -125,7 +132,7 @@ const StageTempo = ({ bpm, setBpm }) => {
           min={40}
           max={220}
           value={bpm}
-          onChange={(event) => setBpm(Number(event.target.value))}
+          onChange={handleRangeChange}
         />
       </div>
 

@@ -1,3 +1,4 @@
+import { useOutletContext } from "react-router-dom";
 import {
   FlashcardTrainer,
   GrooveBriefing,
@@ -6,24 +7,26 @@ import {
   StudiesPanel,
 } from "../components/BassDojo.jsx";
 
-const TrainPage = ({
-  onNoteSelect,
-  target,
-  streak,
-  feedback,
-  bpm,
-  setBpm,
-  isPlaying,
-  setIsPlaying,
-  includeEighths,
-  setIncludeEighths,
-  includeSixteenths,
-  setIncludeSixteenths,
-}) => {
+const TrainPage = () => {
+  const {
+    target,
+    streak,
+    feedback,
+    bpm,
+    setBpm,
+    isPlaying,
+    setIsPlaying,
+    includeEighths,
+    setIncludeEighths,
+    includeSixteenths,
+    setIncludeSixteenths,
+    handleGameAnswer,
+  } = useOutletContext();
+
   return (
     <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
       <div className="space-y-6">
-        <SmartFretboard onNoteSelect={onNoteSelect} />
+        <SmartFretboard onNoteSelect={handleGameAnswer} />
         <FlashcardTrainer target={target} streak={streak} feedback={feedback} />
         <StudiesPanel />
       </div>

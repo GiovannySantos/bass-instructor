@@ -3,6 +3,7 @@ import { createContext, useContext, useMemo, useState } from "react";
 
 
 import { Chord, Interval } from "tonal";
+import useTapTempo from "../hooks/useTapTempo.js";
 
 
 
@@ -1663,69 +1664,25 @@ const MetronomePanel = ({
 
 
 }) => {
-
-
-
-  const [tapTimes, setTapTimes] = useState([]);
-
-
-
+  const { tap, setBpm: setTapBpm } = useTapTempo({
+    initialBpm: bpm,
+    minBpm: 40,
+    maxBpm: 200,
+  });
   const toggleTransport = () => {
-
-
-
     setIsPlaying((prev) => !prev);
-
-
-
   };
-
-
-
   const handleTap = () => {
-
-
-
-    const now = Date.now();
-
-
-
-    const updated = [...tapTimes, now].slice(-4);
-
-
-
-    setTapTimes(updated);
-
-
-
-    if (updated.length >= 2) {
-
-
-
-      const intervals = updated.slice(1).map((time, idx) => time - updated[idx]);
-
-
-
-      const avg = intervals.reduce((acc, val) => acc + val, 0) / intervals.length;
-
-
-
-      const nextBpm = Math.round(60000 / avg);
-
-
-
-      setBpm(Math.min(200, Math.max(40, nextBpm)));
-
-
-
+    const next = tap();
+    if (next !== null) {
+      setBpm(next);
     }
-
-
-
   };
-
-
-
+  const handleRangeChange = (event) => {
+    const value = Number(event.target.value);
+    setBpm(value);
+    setTapBpm(value);
+  };
   return (
 
 
@@ -1734,7 +1691,7 @@ const MetronomePanel = ({
 
 
 
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
 
 
 
@@ -1742,7 +1699,7 @@ const MetronomePanel = ({
 
 
 
-        <span className="text-xs text-slate-400 dark:text-slate-500">{bpm} BPM</span>
+        <span className="text-xs text-slate-400 dark:text-slate-500 tabular-nums whitespace-nowrap min-w-[7ch] leading-none sm:ml-auto sm:flex-none">{bpm} BPM</span>
 
 
 
@@ -1850,7 +1807,7 @@ const MetronomePanel = ({
 
 
 
-          onChange={(event) => setBpm(Number(event.target.value))}
+          onChange={handleRangeChange}
 
 
 
