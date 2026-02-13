@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   dark: "bassdojo:dark",
   stageNotes: "bassdojo:stage-notes",
   stageCue: "bassdojo:stage-cue",
+  trainLastTab: "bassdojo:train:lastTab",
   schemaVersion: "bassdojo:schemaVersion",
 };
 
